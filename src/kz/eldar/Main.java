@@ -31,6 +31,7 @@ import java.util.LinkedList;
 //Зато всё по солиду, DI соблюдён, что позволяет заменить провайдера изменив реализацию
 //IMorseDictionaryProvider в одной строке LetterValidator'а.
 
+//Рефакторил я, чтобы сломанные строки вызывали Exception(до этого они возвращали null)
 public class Main {
 
     public static void main(String[] args) {
@@ -39,22 +40,45 @@ public class Main {
         System.out.println(MorseConverterFacade.Convert(".--- .- ...- .-   -... .-. ..- .... .-.-.-"));
         System.out.println();
 
-        //Использование напрямую без фасадов
+        //Использование напрямую без фасада
         System.out.println(TextConverter.toMorse(new TextValidator("Java Bruh.")));
         System.out.println(TextConverter.fromMorse(new TextValidator(".--- .- ...- .-   -... .-. ..- .... .-.-.-")));
         System.out.println();
 
         System.out.println(WordConverter.toMorse(new WordValidator("Bruh")));
-        String[] lettrs = {"-...", ".-.", "..-", "....", ".-.-.-"};
-        System.out.println(WordConverter.fromMorse(new WordValidator(Arrays.asList(lettrs))));
+        String[] letters = {"-...", ".-.", "..-", "....", ".-.-.-"};
+        System.out.println(WordConverter.fromMorse(new WordValidator(Arrays.asList(letters))));
         System.out.println();
 
         System.out.println(LetterConverter.toMorse(new LetterValidator('b')));
         System.out.println(LetterConverter.fromMorse(new LetterValidator("-...")));
         System.out.println();
 
-        //"Сломанные" строки корректно возвращают null
-        System.out.println(MorseConverterFacade.Convert("ЖЖЖ"));
-        System.out.println(LetterConverter.toMorse(new LetterValidator('Ы')));
+        //"Сломанные" строки выкидывают IllegalArgumentException
+        try {
+            System.out.println(MorseConverterFacade.Convert("ЮЮЮ"));
+        }
+        catch (IllegalArgumentException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        try {
+            System.out.println(LetterConverter.fromMorse(new LetterValidator("И")));
+        }
+        catch (IllegalArgumentException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        try {
+            System.out.println(WordConverter.toMorse(new WordValidator("ДГЪ")));
+        }
+        catch (IllegalArgumentException ex){
+            System.out.println(ex.getMessage());
+        }
+
+
+        //Пустая строка тоже ничего не ломает
+        System.out.println(MorseConverterFacade.Convert(""));
+
     }
 }

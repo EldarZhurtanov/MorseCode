@@ -10,49 +10,80 @@ import java.util.Optional;
 public class LetterValidator {
     private static MorseDictionaryProvider morseDictionaryProvider = new BadMorseDictionaryProvider();
     private  LetterInMorseCode letterInMorseCode = null;
-    private Boolean isValid = false;
+    private Boolean isValid = true;
 
     public LetterValidator(Character letter)
+            throws IllegalArgumentException
     {
-        Character lowLetter = Character.toLowerCase(letter);
+        Optional<LetterInMorseCode> letterInMorseCode = validateLetter(letter);
 
-        Optional<LetterInMorseCode> letterInDictionary = morseDictionaryProvider
-                .getMorseDictionary()
-                .stream()
-                .filter(letterInMorseCode -> letterInMorseCode
-                        .getLetter()
-                        .equals(lowLetter))
-                .findAny();
-
-        if(letterInDictionary.isPresent())
+        if(letterInMorseCode.isPresent())
         {
-            letterInMorseCode = letterInDictionary.get();
-            isValid = true;
+            this.letterInMorseCode = letterInMorseCode.get();
+        }
+        else
+        {
+            isValid = false;
+            letterInMorseCode = null;
+            throw new IllegalArgumentException("Unknown character met: " + letter);
         }
     }
 
     public LetterValidator(String letterInMorse)
+            throws IllegalArgumentException
     {
-        Optional<LetterInMorseCode> letterInDictionary = morseDictionaryProvider
-                .getMorseDictionary()
-                .stream()
-                .filter(letterInMorseCode -> MorseEnumCollectionToString
-                        .morseEnumCollectionToString(letterInMorseCode.getMorseSymbols())
-                        .equals(letterInMorse))
-                .findAny();
+        Optional<LetterInMorseCode> letterInMorseCode = validateMorseLetter(letterInMorse);
 
-        if(letterInDictionary.isPresent())
+        if(letterInMorseCode.isPresent())
         {
-            letterInMorseCode = letterInDictionary.get();
-            isValid = true;
+            this.letterInMorseCode = letterInMorseCode.get();
+        }
+        else
+        {
+            isValid = false;
+            letterInMorseCode = null;
+            throw new IllegalArgumentException("Unknown character met: " + letterInMorse);
         }
     }
 
-    public Boolean isValid() {
-        return isValid;
+    private static Optional<LetterInMorseCode> validateLetter(Character letter)
+    {
+        return  morseDictionaryProvider
+                .getMorseDictionary()
+                .stream()
+                .filter(l -> l
+                        .getLetter()
+                        .equals(Character.toLowerCase(letter)))
+                .findAny();
+    }
+
+    private static Optional<LetterInMorseCode> validateMorseLetter(String letterInMorse)
+    {
+        return morseDictionaryProvider
+                .getMorseDictionary()
+                .stream()
+                .filter(l -> MorseEnumCollectionToString
+                        .morseEnumCollectionToString(l.getMorseSymbols())
+                        .equals(letterInMorse))
+                .findAny();
+    }
+
+    public static Boolean isValidLetter(Character letter)
+    {
+        return validateLetter(letter).isPresent();
+    }
+
+    public static Boolean isValidMorseLetter(String letterInMorse)
+    {
+        return validateMorseLetter(letterInMorse).isPresent();
     }
 
     public LetterInMorseCode getLetterInMorseCode() {
         return letterInMorseCode;
+    }
+
+    public Boolean isValid()
+    {
+        return isValid;
     }
 }

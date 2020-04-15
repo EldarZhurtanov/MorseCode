@@ -5,18 +5,15 @@ import kz.eldar.morse.validators.TextValidator;
 
 public class MorseConverterFacade {
     public static String Convert(String text)
+            throws IllegalArgumentException
     {
-        TextValidator textValidator = new TextValidator(text);
-
-        if(textValidator.isValid())
+        if(TextValidator.isValidMorseText(text))
         {
-            if (textValidator.isMorseText())
-                return TextConverter.fromMorse(textValidator);
-            else
-                return TextConverter.toMorse(textValidator);
+            return TextConverter.fromMorse(new TextValidator(text));
         }
         else
-            return null;
-
+        {
+            return TextConverter.toMorse(new TextValidator(text));
+        }
     }
 }

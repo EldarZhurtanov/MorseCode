@@ -3,29 +3,36 @@ package kz.eldar.morse.validators;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Optional;
 
 public class TextValidator{
     private Collection<WordValidator> wordValidators;
     private Boolean isValid = true;
-    private Boolean isMorseText = true;
 
     public TextValidator(String text)
+            throws IllegalArgumentException
     {
-        wordValidators = ValidateMorseText(text);
-
-        if(wordValidators == null)
+        try
         {
-            isMorseText = false;
-
-            wordValidators = ValidateText(text);
-
-            if(wordValidators == null)
-                isValid = false;
+            wordValidators = validateMorseText(text);
         }
-
+        catch (IllegalArgumentException e)
+        {
+            try
+            {
+                wordValidators = validateText(text);
+            }
+            catch (IllegalArgumentException ex)
+            {
+                isValid = false;
+                wordValidators = null;
+                throw ex;
+            }
+        }
     }
 
-    private static Collection<WordValidator> ValidateMorseText(String text)
+    private static Collection<WordValidator> validateMorseText(String text)
+            throws IllegalArgumentException
     {
         String[] words = text.split("\\s{2,}");
 
@@ -35,53 +42,52 @@ public class TextValidator{
         {
             Collection<String> wordInMorse = new LinkedList<String>(Arrays.asList(word.split("\\s")));
 
-            WordValidator wordValidator = new WordValidator(wordInMorse);
-
-            if(wordValidator.isValid())
-            {
-                wordValidators.add(wordValidator);
-            }
-            else
-            {
-                wordValidators = null;
-                break;
-            }
+            wordValidators.add(new WordValidator(wordInMorse));
         }
         return wordValidators;
     }
 
-    private static Collection<WordValidator> ValidateText(String text)
+    private static Collection<WordValidator> validateText(String text)
+            throws IllegalArgumentException
     {
         String[] words = text.split("\\s{1,}");
 
         Collection<WordValidator> wordValidators = new LinkedList<WordValidator>();
 
         for(String word: words)
-        {
-            WordValidator wordValidator = new WordValidator(word);
+            wordValidators.add(new WordValidator(word));
 
-            if(wordValidator.isValid())
-            {
-                wordValidators.add(wordValidator);
-            }
-            else
-            {
-                wordValidators = null;
-                break;
-            }
-        }
         return wordValidators;
     }
 
-    public Boolean isValid() {
-        return isValid;
+    public static Boolean isValidText(String text)
+    {
+        try{
+            return validateText(text).size() > 0;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return false;
+        }
     }
 
-    public Boolean isMorseText() {
-        return isMorseText;
+    public static Boolean isValidMorseText(String text)
+    {
+        try{
+            return validateMorseText(text).size() > 0;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return false;
+        }
     }
 
     public Collection<WordValidator> getWordValidators() {
         return wordValidators;
+    }
+
+    public Boolean isValid()
+    {
+        return isValid;
     }
 }
