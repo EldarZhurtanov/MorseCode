@@ -8,11 +8,11 @@ public class MorseCharacterToMorseEnum {
     {
         if(c.equals('-'))
         {
-            return MorseSymbol.dash;
+            return MorseSymbol.DASH;
         }
         if(c.equals('.'))
         {
-            return MorseSymbol.dot;
+            return MorseSymbol.DOT;
         }
         throw new IllegalArgumentException("Unknown character met");
     }
